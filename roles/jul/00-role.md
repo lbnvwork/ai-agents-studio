@@ -1,6 +1,6 @@
 # Юлий — DevOps-инженер
 
-Работаешь в каталоге `ibs-devops-jul`. Docker: проект `ibs_jul`, порты nginx 8003 / PostgreSQL 5443 / Vite 5183.
+Работаешь в каталоге `{{AGENT_DIR}}`. Docker: проект `{{DOCKER_PROJECT}}`, порты nginx {{PORT_APP}} / PostgreSQL {{PORT_DB}} / Vite {{PORT_WEB}}.
 
 ## Навыки
 - `git-workflow`, `run-tests`, `write-instruction`.
@@ -22,5 +22,5 @@
 - Инструкции: `docs/06-DevOps/`; доступы: `docs/09-Служебное/Доступы/` (gitignored).
 
 ## По завершении задачи
-- Останови Docker-стек: `docker compose -p ibs_devops down` (проект уточни в `docker compose ls`; экономия RAM на машине).
+- Останови Docker-стек: `docker compose -p {{DOCKER_PROJECT}} down` (проект уточни в `docker compose ls`; экономия RAM на машине).
 PR создаёшь ТОЛЬКО после отмашки руководителя: `gh pr create --base develop --head <ветка> --title 'S.NN Название' --body-file <файл>`. Тело — по шаблону `docs/03-Задачи/_Шаблоны/PR.md`. Руководитель ревьюит и мёржит.

@@ -1,6 +1,6 @@
-# ibs-agents — единый источник настроек агентов (Cline)
+# ai-agents-studio — единый источник настроек агентов (Cline)
 
-Готовый каркас «системы управления агентами» для команды ИИ-агентов (Cline), работающих в нескольких клонах одного проекта. Решает главную боль: **скиллы, правила и роли агентов живут в одном месте, а не дублируются по N клонам** (где они неизбежно рассинхронизируются).
+Готовый каркас «системы управления агентами» для команды ИИ-агентов (Cline), работающих в нескольких клонах одного проекта. Решает главную боль: **скиллы, правила и роли агентов живут в одном месте, а не дублируются по N клонам** (где они неизбежно рассинхронизируются). Ядро нейтрально — проектная специфика вынесена в **профили**.
 
 ## Проблема, которую решаем
 
@@ -8,30 +8,58 @@
 
 ## Решение
 
-Все настройки агентов вынесены в **отдельный репозиторий** `ibs-agents`. Подключение к клонам — через **симлинки и копии** (скрипт `setup.sh`), без `git submodule` и без ручного копирования.
+Все настройки агентов вынесены в **отдельный репозиторий** `ai-agents-studio`. Подключение к клонам — через **симлинки и копии** (скрипт `setup.sh`), без `git submodule` и без ручного копирования.
 
-Ключевая идея: агенты **ничего не делают**, чтобы получить обновления. Правка в `ibs-agents` → агенты видят её (скиллы — сразу, правила — после `setup.sh`).
+Ключевая идея: агенты **ничего не делают**, чтобы получить обновления. Правка в `ai-agents-studio` → агенты видят её (глобальные скиллы — сразу, правила и ролевые скиллы — после `setup.sh`).
 
 ## Структура
 
 ```
-ibs-agents/
-├── skills/          # скиллы Cline (11 + sync-env)
+ai-agents-studio/
+├── skills/                       # скиллы Cline: глобальные + ролевые
 │   └── <name>/SKILL.md
-├── clinerules/      # общие правила (10-git … 50-dod)
-├── roles/<role>/00-role.md   # ролевые правила (по одному на роль)
-├── hooks/           # скрипты-хуки Cline (экономия токенов)
-├── setup.sh         # развёртывание: симлинки (скиллы) + копии (правила)
+├── clinerules/                   # общие правила (10-git … 50-dod)
+├── roles/<role>/00-role.md       # ролевые правила (по одному на роль)
+├── profiles/                     # профили проектов
+│   ├── _template/project.env.dist    # шаблон (в git)
+│   └── <project>/project.env         # рабочие значения (НЕ в git)
+├── hooks/                        # скрипты-хуки Cline (экономия токенов)
+├── setup.sh                      # развёртывание: рендер плейсхолдеров + симлинки
 └── README.md
 ```
+
+## Профили проектов (мультипроектность)
+
+В правилах, ролях и ролевых скиллах стоят плейсхолдеры `{{KEY}}` — пути, имена репозиториев, docker-проекты, порты, план, ёмкость. Значения берутся из профиля проекта:
+
+| Файл | В git | Назначение |
+|---|---|---|
+| `profiles/_template/project.env.dist` | да | шаблон с комментариями по каждому ключу |
+| `profiles/<project>/project.env` | **нет** (`.gitignore`) | рабочие значения: пути, репозитории, docker, порты, план, ёмкость |
+
+Поднять настройки под новый проект (имя проекта ядро не знает — берётся из профиля):
+
+```bash
+cp profiles/_template/project.env.dist profiles/<project>/project.env
+$EDITOR profiles/<project>/project.env       # PROJECT, AGENTS_ROOT, репозитории, docker, порты, план
+./setup.sh --project <project> --dry-run     # посмотреть, что будет сделано
+./setup.sh --project <project>               # применить
+./setup.sh --project <project> --check       # дрейф: установленные копии vs ядро
+```
+
+Если рабочий профиль в `profiles/` **один**, `--project` можно не указывать — `./setup.sh` возьмёт его автоматически. Как только профилей два и больше, скрипт требует `--project` явно (и печатает список доступных).
+
+Ключи профиля: `PROJECT`, `PROJECT_TITLE`, `AGENTS_ROOT`, `AGENT_PREFIX`, `AGENTS` (список «каталог:роль»), `CODE_REPO`/`CODE_REPO_URL`/`CODE_BRANCH`, `DOCS_REPO`/`DOCS_REPO_URL`/`DOCS_BRANCH`, `PM_DIR`, `DOCKER_PREFIX`/`DOCKER_PM`/`DOCKER_DEV`/`DOCKER_PROD`, `PORT_<РОЛЬ>_APP|DB|WEB`, `PORT_DEV_*`/`PORT_PROD_*`, `CUR_SPRINT`, `SPRINT_FROM`/`SPRINT_TO`, `DEADLINE_D1`/`DEADLINE_D2`, `SPRINT_DAYS`, `CAP_*`.
+
+Полный список плейсхолдеров и подстановка — в `setup.sh` (функция `render`).
 
 ## Как это работает
 
 | Что | Механизм | Почему |
 |---|---|---|
-| **Скиллы** | симлинки `.cline/skills/<skill>` → `ibs-agents/skills/<skill>` | Cline следует симлинкам директорий → обновления видны мгновенно |
-| **Правила** | копии `.clinerules/*.md` ← `cp` из `ibs-agents/clinerules/` | Cline **не** следует симлинкам файлов → поэтому копии |
-| **Роли** | `roles/<role>/00-role.md` копируется в `.clinerules/00-role.md` | у каждого агента своя инициализация |
+| **Глобальные скиллы** — `git-workflow`, `sync-env`, `write-instruction` | симлинки: `<агент>/.cline/skills/<skill>` → `ai-agents-studio/skills/<skill>`, плюс `~/.cline/skills` | Cline следует симлинкам директорий → обновления видны мгновенно; текст нейтрален, плейсхолдеров нет |
+| **Правила и роль** | копии с рендером: `.clinerules/*.md` ← `clinerules/`, `.clinerules/00-role.md` ← `roles/<role>/` | Cline **не** следует симлинкам файлов → копии; рендер подставляет значения профиля |
+| **Ролевые скиллы** | копии с рендером: `<агент>/.cline/skills/<skill>` | в них есть проектные плейсхолдеры (напр. `status-briefing`) |
 
 ## Уровни скиллов (per-role)
 
@@ -51,19 +79,19 @@ ibs-agents/
 | find-dead-code | ✅ | ✅ | — | ✅ | — | ✅ |
 | release | — | — | — | — | — | ✅ |
 
-Скиллы с ✅ у всех (`git-workflow`, `sync-env`, `write-instruction`) — **глобальные** (`~/.cline/skills` + все клоны); остальные — **per-role** (только клон агента). Настройка — в `setup.sh` (`GLOBAL_SKILLS` + `ROLE_SKILLS`).
+Скиллы с ✅ у всех — **глобальные**; остальные — **per-role**. Списки — в `setup.sh` (`GLOBAL_SKILLS`, `ROLE_SKILLS`), состав команды — в профиле (`AGENTS`).
 
 ## Установка
 
 ```bash
-git clone git@github.com:<org>/ibs-agents.git
-cd ibs-agents
-./setup.sh            # применить
-./setup.sh --dry-run  # посмотреть, что изменится
-./setup.sh --only ibs-dev-may   # точечно (пилот)
+git clone git@github.com:<org>/ai-agents-studio.git
+cd ai-agents-studio
+cp profiles/_template/project.env.dist profiles/<project>/project.env   # заполнить под проект
+./setup.sh --project <project>                    # применить
+./setup.sh --project <project> --dry-run          # посмотреть, что изменится
+./setup.sh --project <project> --check            # проверить дрейф (ничего не пишет)
+./setup.sh --project <project> --only <префикс>dev-may   # точечно (пилот)
 ```
-
-`setup.sh` читает два списка в шапке: `AGENT_ROLE` (каталог агента → роль) и `ROLE_EXCLUDE` (роль → исключённые скиллы). Чтобы применить у себя — поправьте эти два списка и `GLOBAL_SKILLS`/`PROJECT_COMMON`.
 
 ## Команда «синхронизируйся» (скилл sync-env)
 
@@ -76,9 +104,9 @@ cd ibs-agents
 
 ## Обновление настроек
 
-1. Правка в `ibs-agents` → коммит → пуш.
-2. Скиллы (симлинки) — агенты видят сразу (перезапуск Cline).
-3. Правила (копии) — перезапустить `./setup.sh`.
+1. Правка в `ai-agents-studio` → коммит → пуш.
+2. Глобальные скиллы (симлинки) — агенты видят сразу (перезапуск Cline).
+3. Правила и ролевые скиллы (копии) — перезапустить `./setup.sh --project <project>`, затем `--check` для контроля дрейфа.
 
 ## Хуки Cline (экономия токенов)
 
@@ -88,7 +116,7 @@ cd ibs-agents
 
 ```
 событие: PreCompact
-команда: bash /home/max/work/ibs/projects/ibs-agents/hooks/context-summary.sh
+команда: bash /путь/к/ai-agents-studio/hooks/context-summary.sh
 ```
 
 `context-summary.sh` читает `.cline/context.md` (его пишет скилл `sync-env`) и выводит первые ~300 символов — после сжатия это остаётся в summary.

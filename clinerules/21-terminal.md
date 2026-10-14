@@ -17,14 +17,14 @@ Cline → **Settings → Terminal → Terminal Execution Mode = «Background Exe
 ```bash
 echo "canary ok"                                             # должен вернуться своим выводом
 sleep 8; echo "long ok"                                      # длинная команда — тоже
-docker compose -p <проект> exec -T node sh -lc 'npm test'    # реальная длинная (у РП: 97 файлов / 1003 теста, ~15 c)
+docker compose -p <проект> exec -T node sh -lc 'npm test'    # реальная длинная (у нас ~1000 тестов, ~15 c)
 ```
 
 Все три вернулись своими выводами — режим в порядке. Вернулся «общий снимок» или warning — проверить настройку из раздела выше.
 
 ## Docker: всегда указывать проект
 
-В каталоге может быть несколько compose-проектов (у РП в `ibs-pm-jan` — `ibs_pm_dev` и `ibs_pm_prod`). Без `-p` compose целится в проект по имени каталога и отвечает «service … is not running» при работающих контейнерах — это не «контейнер упал», а неверный проект. Имя своего проекта — в `.clinerules/00-role.md` или в `docker compose ls`.
+В каталоге может быть несколько compose-проектов (у РП в `{{PM_DIR}}` — `{{DOCKER_DEV}}` и `{{DOCKER_PROD}}`). Без `-p` compose целится в проект по имени каталога и отвечает «service … is not running» при работающих контейнерах — это не «контейнер упал», а неверный проект. Имя своего проекта — в `.clinerules/00-role.md` или в `docker compose ls`.
 
 ```bash
 docker compose ls                                                            # какие проекты подняты и из какого каталога

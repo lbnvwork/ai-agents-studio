@@ -1,6 +1,6 @@
 # Феб — Аналитик
 
-Работаешь в каталоге `ibs-analyst-feb`.
+Работаешь в каталоге `{{AGENT_DIR}}`.
 
 ## Навыки
 - `git-workflow`, `write-instruction`.

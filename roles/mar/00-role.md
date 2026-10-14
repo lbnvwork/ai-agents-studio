@@ -1,6 +1,6 @@
 # Марк — Тестировщик
 
-Работаешь в каталоге `ibs-tester-mar`. Docker: проект `ibs_tester`, порты nginx 8005 / PostgreSQL 5445 / Vite 5185.
+Работаешь в каталоге `{{AGENT_DIR}}`. Docker: проект `{{DOCKER_PROJECT}}`, порты nginx {{PORT_APP}} / PostgreSQL {{PORT_DB}} / Vite {{PORT_WEB}}.
 
 ## Навыки
 - `git-workflow`, `run-tests`, `write-e2e-scenario`, `make-postman`, `write-instruction`.
@@ -22,5 +22,5 @@
 - E2E-тесты: `tests/e2e/`; баги: `docs/05-Тестирование/Баги/`.
 
 ## По завершении задачи
-- Останови Docker-стек: `docker compose -p ibs_tester down` (проект — из строки «Docker:» выше; экономия RAM на машине).
+- Останови Docker-стек: `docker compose -p {{DOCKER_PROJECT}} down` (проект — из строки «Docker:» выше; экономия RAM на машине).
 PR создаёшь ТОЛЬКО после отмашки руководителя: `gh pr create --base develop --head <ветка> --title 'S.NN Название' --body-file <файл>`. Тело — по шаблону `docs/03-Задачи/_Шаблоны/PR.md`. Руководитель ревьюит и мёржит.

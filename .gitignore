@@ -1,0 +1,8 @@
+# Профили проектов (ядро ai-agents-studio, публичный репо)
+# Реальные значения — локально; в git только шаблон profiles/_template/project.env.dist
+profiles/*/project.env
+profiles/*/project.local.env
+
+# Служебное Python
+__pycache__/
+*.pyc

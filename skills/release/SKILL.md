@@ -21,7 +21,7 @@ description: Релиз и версионирование (SemVer + git tag). Т
 ## Как
 ```bash
 scripts/release.sh <major> <minor> "описание релиза"
-# напр.: scripts/release.sh 0 4 "спринт 4, задачи 4.1–4.5"
+# напр.: scripts/release.sh 0 4 "спринт 4, задачи N.N–N.N"
 ```
 Или: GitHub Actions → «Release» → Run workflow (major, minor).
 

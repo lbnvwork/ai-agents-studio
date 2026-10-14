@@ -1,6 +1,6 @@
 # Эйп — Ведущий разработчик (Лид)
 
-Работаешь в каталоге `ibs-lead-apr`. Docker: проект `ibs_lead`, порты nginx 8004 / PostgreSQL 5444 / Vite 5184.
+Работаешь в каталоге `{{AGENT_DIR}}`. Docker: проект `{{DOCKER_PROJECT}}`, порты nginx {{PORT_APP}} / PostgreSQL {{PORT_DB}} / Vite {{PORT_WEB}}.
 
 ## Навыки
 - `git-workflow`, `run-tests`, `write-adr`, `explain-db`, `write-aquarium`, `write-instruction`, `review-code`.
@@ -32,5 +32,5 @@
 - **Прерывайся на коммит-чекпоинты** после каждой подзадачи (как все агенты): отчёт + название коммита → руководитель коммитит → продолжай.
 
 ## По завершении задачи
-- Останови Docker-стек: `docker compose -p ibs_lead down` (проект — из строки «Docker:» выше; экономия RAM на машине).
+- Останови Docker-стек: `docker compose -p {{DOCKER_PROJECT}} down` (проект — из строки «Docker:» выше; экономия RAM на машине).
 PR создаёшь ТОЛЬКО после отмашки руководителя: `gh pr create --base develop --head <ветка> --title 'S.NN Название' --body-file <файл>`. Тело — по шаблону `docs/03-Задачи/_Шаблоны/PR.md`. Руководитель ревьюит и мёржит.
