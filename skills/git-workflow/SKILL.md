@@ -18,7 +18,7 @@ description: Работа с git — ветки, коммиты, пул-рекв
    git fetch origin
    git pull origin develop                        # или: checkout develop → pull → checkout <ветка> → merge develop
    git checkout -b S_NN_название                  # если ветки нет — от актуального develop
-    # тесты — скиллом run-tests (phpunit + phpstan + npm test:unit), обязательно
+    # тесты — скиллом run-tests (команды под стек проекта), обязательно
     # мёртвый код — скиллом find-dead-code (код, живущий только для тестов, удаляем)
    git push -u origin <ветка>                     # по отмашке
    ```

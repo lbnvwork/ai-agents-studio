@@ -2,6 +2,10 @@
 # Реальные значения — локально; в git только шаблон profiles/_template/project.env.dist
 profiles/*/project.env
 profiles/*/project.local.env
+# Переопределения контента (profiles/<project>/roles/, profiles/<project>/skills/) — текстовые:
+# держим локально (в публичном ядре им не место) — до выноса в проектный слой (--layer).
+profiles/*/roles/
+profiles/*/skills/
 
 # Служебное Python
 __pycache__/

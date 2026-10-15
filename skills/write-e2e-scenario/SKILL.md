@@ -1,6 +1,6 @@
 ---
 name: write-e2e-scenario
-description: Написание сквозного (E2E) сценария в формате Gherkin для Playwright.
+description: Написание сквозного (E2E) сценария в формате Gherkin для инструмента проекта (веб — Playwright, мобильное — Espresso/Appium).
 ---
 
 # Write-e2e-scenario

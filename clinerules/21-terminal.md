@@ -17,7 +17,7 @@ Cline → **Settings → Terminal → Terminal Execution Mode = «Background Exe
 ```bash
 echo "canary ok"                                             # должен вернуться своим выводом
 sleep 8; echo "long ok"                                      # длинная команда — тоже
-docker compose -p <проект> exec -T node sh -lc 'npm test'    # реальная длинная (у нас ~1000 тестов, ~15 c)
+docker compose -p <проект> exec -T <сервис> sh -lc '<команда тестов>'  # реальная длинная (команды — в скилле run-tests)
 ```
 
 Все три вернулись своими выводами — режим в порядке. Вернулся «общий снимок» или warning — проверить настройку из раздела выше.
@@ -28,14 +28,16 @@ docker compose -p <проект> exec -T node sh -lc 'npm test'    # реаль�
 
 ```bash
 docker compose ls                                                            # какие проекты подняты и из какого каталога
-docker compose -p <проект> exec -T php sh -lc 'vendor/bin/phpunit'           # backend: /var/www/html, PHP 8.3
-docker compose -p <проект> exec -T node sh -lc 'npm test'                    # frontend: /app, Node 20
+docker compose -p <проект> exec -T php sh -lc 'vendor/bin/phpunit'           # пример веб-стека: backend, workdir /var/www/html
+docker compose -p <проект> exec -T node sh -lc 'npm test'                    # пример веб-стека: frontend, workdir /app
 docker compose -p <проект> exec -T php sh -lc 'php bin/console cache:clear'   # после обновления кода без rebuild
 ```
+
+Свои команды (стек проекта) — в скилле `run-tests`.
 
 ## Гигиена команд
 
 - Неинтерактивно: `-T` для `docker exec`/`run`, `--no-pager` для git, `-y` / `--no-input` для пакетных менеджеров. В Background Exec терминал невидим: команда, ждущая ввода, повиснет молча.
 - Одна команда = одно действие — читаемый дифф и отчёт. Пачка команд в одном вызове допустима только для быстрых независимых проверок.
 - Не создавай ложных падений: `… || true`, `; echo "exit=$?"` — чтобы «нет совпадений» в `grep` не выглядело как ошибка.
-- Локальный Node годится только для мелочей: vitest/build локально падает (`rolldown` требует `node:util.styleText` из Node ≥ 20.12) — тесты и сборка только в контейнере.
+- Локальный рантайм годится только для мелочей: сборка и тесты — в контейнере (локальная версия рантайма легко расходится с образом проекта).
