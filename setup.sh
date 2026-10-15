@@ -213,6 +213,21 @@ ensure_link() {  # ensure_link <цель> <путь>
   fi
 }
 
+ensure_lines() {  # ensure_lines <файл> <строка> … — добавляет отсутствующие строки
+  local file="$1"; shift
+  local line added=0 norm
+  for line in "$@"; do
+    norm="$(printf '%s' "$line" | tr -d '[:space:]')"
+    if [ -f "$file" ] && tr -d '[:space:]' < "$file" | grep -qF "$norm"; then continue; fi
+    if [ "$CHECK" = 1 ]; then echo "  ДРЕЙФ (нет строки '$line'): $file"; DRIFT=$((DRIFT+1)); continue; fi
+    if [ "$DRY" = 1 ]; then echo "  append '$line' → $file"; added=1; continue; fi
+    mkdir -p "$(dirname "$file")"
+    printf '%s\n' "$line" >> "$file"
+    added=1
+  done
+  [ "$added" = 1 ] || true
+}
+
 echo "== Профиль: $PROJECT ($PROFILE) =="
 echo "== Глобальные (~/.cline/skills) =="
 mkdir -p ~/.cline/skills
@@ -245,6 +260,26 @@ for pair in $AGENTS; do
   done
   ensure_file "$(render "$(pick_role "$code")" "$dir" "$code" "$lane")" "$d/.clinerules/00-role.md"
   echo "  OK $dir ($code · дорожка $lane)"
+done
+
+# --- toolkit: PM-скрипты в docs каждого клона --------------------------------
+# Скрипты живут в ядре (toolkit/), в проект уезжают копиями (как правила), рядом —
+# конфиг `.agents` с путём к ядру и именем профиля (локальный, в git не нужен).
+echo "== Toolkit (скрипты PM в docs проекта) =="
+for pair in $AGENTS; do
+  dir="${pair%%:*}"; rest="${pair#*:}"; code="${rest%%:*}"; lane="${rest#*:}"
+  d="$AGENTS_DIR/$dir"
+  [ -n "$ONLY" ] && [ "$dir" != "$ONLY" ] && continue
+  if [ ! -d "$d/docs/09-Служебное" ]; then echo "  SKIP $dir (нет docs)"; continue; fi
+  scripts_dir="$d/docs/09-Служебное/Скрипты"
+  if [ "$CHECK" = 0 ]; then mkdir -p "$scripts_dir"; fi
+  for f in "$ROOT/toolkit/project.py" "$ROOT"/toolkit/scripts/*.py; do
+    ensure_file "$(cat "$f")" "$scripts_dir/$(basename "$f")"
+  done
+  ensure_file "CORE=$ROOT
+PROJECT=$PROJECT" "$scripts_dir/.agents"
+  ensure_lines "$d/docs/.gitignore" ".agents" "__pycache__/"
+  echo "  OK $dir (toolkit: $(ls "$ROOT"/toolkit/scripts/*.py | wc -l) скриптов + project.py)"
 done
 
 if [ "$CHECK" = 1 ]; then
