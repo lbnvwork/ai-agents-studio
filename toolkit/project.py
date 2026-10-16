@@ -16,6 +16,7 @@ import argparse
 import glob
 import io
 import os
+import re
 
 CONFIG_NAME = '.agents'
 
@@ -27,7 +28,12 @@ DEFAULT_TASK_LANE = {
 
 
 def parse_env_file(path):
-    """KEY=VALUE, по строке на ключ; комментарии и кавычки — как в shell-профиле."""
+    """KEY=VALUE, по строке на ключ; комментарии и кавычки — как в shell-профиле.
+
+    Хвостовой комментарий отрезается: после закрывающей кавычки (KEY="v"  # …) или
+    до `#` у значения без кавычек (KEY=web  # web | mobile). `#` внутри кавычек — часть
+    значения (важно для словарей вроде AWAITING).
+    """
     data = {}
     for raw in io.open(path, encoding='utf-8'):
         line = raw.strip()
@@ -35,10 +41,20 @@ def parse_env_file(path):
             continue
         key, val = line.split('=', 1)
         key, val = key.strip(), val.strip()
-        if len(val) >= 2 and val[0] == val[-1] and val[0] in '\"\'':
+        val = _strip_comment(val)
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in '"\'':
             val = val[1:-1]
         data[key] = val
     return data
+
+
+def _strip_comment(val):
+    """Отрезает хвостовой комментарий значения (вне кавычек)."""
+    if val[:1] in ('"', "'"):
+        quote = val[0]
+        end = val.find(quote, 1)
+        return val[:end + 1] if end != -1 else val
+    return val.split('#', 1)[0].strip()
 
 
 def _find_config(start_dir):
@@ -90,6 +106,11 @@ def load(project=None, layer=None, core=None, start_dir=None):
     project = project or os.environ.get('AGENTS_PROJECT') or cfg.get('PROJECT')
     layer = layer or os.environ.get('AGENTS_LAYER') or cfg.get('LAYER')
     core = core or os.environ.get('AGENTS_CORE') or cfg.get('CORE')
+    if not core:
+        # запуск из ядра: <core>/toolkit/project.py → ядро на уровень выше
+        guess = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if os.path.isdir(os.path.join(guess, 'profiles')):
+            core = guess
 
     if layer:
         profile = os.path.join(layer, 'project.env')
@@ -273,6 +294,50 @@ class Project(object):
 
     def total_capacity(self):
         return sum(v['cap'] or 0 for v in self.lanes.values())
+
+    @property
+    def awaiting_none(self):
+        """Значение awaiting «мяч ни у кого» (тип none в словаре профиля)."""
+        for val, meta in self.awaiting.items():
+            if meta.get('type') == 'none':
+                return val
+        return '—'
+
+    def lane_agent(self, lane):
+        """Каталог первого агента дорожки — маршрут задач этой дорожки."""
+        who = self.agents_in_lane(lane)
+        return who[0] if who else ''
+
+    def agent_for_type(self, ttype):
+        """Тип задачи → каталог агента (TASK_LANE профиля; пусто — если не задано)."""
+        return self.lane_agent(self.task_lane.get(ttype, ''))
+
+    def template_path(self, name):
+        """Файл шаблона: сначала проектный слой, затем профиль ядра (слой перекрывает)."""
+        candidates = [os.path.join(os.path.dirname(self.profile_path), 'templates', name)]
+        if self.core and self.name:
+            candidates.append(os.path.join(self.core, 'profiles', self.name, 'templates', name))
+        for path in candidates:
+            if os.path.isfile(path):
+                return path
+        raise SystemExit('не найден шаблон %s (искал: %s)' % (name, ', '.join(candidates)))
+
+    def render(self, path, values):
+        """Подставляет {{ключ}} в файл шаблона профиля.
+
+        Значение None → вся строка с этим плейсхолдером удаляется (не пустая строка!).
+        Неизвестный плейсхолдер — ошибка (шаблон и скрипт разошлись).
+        """
+        text = io.open(path, encoding='utf-8').read()
+
+        def _sub(m):
+            key = m.group(1)
+            if key not in values:
+                raise SystemExit('шаблон %s: нет значения для {{%s}}' % (path, key))
+            return '\x00' if values[key] is None else str(values[key])
+
+        out = re.sub(r'\{\{([A-Za-z0-9_]+)\}\}', _sub, text)
+        return '\n'.join(l for l in out.split('\n') if l.strip() != '\x00')
 
 
 def _split_items(value):

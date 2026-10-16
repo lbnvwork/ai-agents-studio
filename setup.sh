@@ -73,8 +73,27 @@ if [ ! -f "$PROFILE" ]; then
   echo "создай: cp profiles/_template/project.env.dist <каталог>/project.env"
   exit 2
 fi
-# shellcheck disable=SC1090
-set -a; . "$PROFILE"; set +a
+# Значения профиля читаем как ДАННЫЕ: содержимое не выполняется (бэктики, $(), ! — текст,
+# а не команды). Учитываем кавычки и хвостовые комментарии — как project.py у скриптов.
+load_profile() {
+  local line key val quote rest
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in ''|'#'*) continue ;; esac
+    case "$line" in *=*) ;; *) continue ;; esac
+    key="${line%%=*}"; val="${line#*=}"
+    key="${key//[[:space:]]/}"
+    case "$key" in ''|*[!A-Za-z0-9_]*) continue ;; esac
+    case "$val" in
+      \"*|\'*)
+        quote="${val:0:1}"; rest="${val:1}"; val="${rest%%"$quote"*}" ;;
+      *) val="${val%%#*}" ;;
+    esac
+    val="${val#"${val%%[![:space:]]*}"}"
+    val="${val%"${val##*[![:space:]]}"}"
+    export "$key=$val"
+  done < "$PROFILE"
+}
+load_profile
 if [ -z "${PROJECT:-}" ]; then echo "в профиле не задан PROJECT: $PROFILE"; exit 2; fi
 if [ -n "$ROOT_OVERRIDE" ]; then AGENTS_ROOT="$ROOT_OVERRIDE"; fi
 AGENTS_DIR="$AGENTS_ROOT"

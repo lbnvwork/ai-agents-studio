@@ -31,6 +31,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import check_comments as cc  # noqa: E402 — формат записи: один источник истины
 import project as proj  # noqa: E402 — общий модуль toolkit
 
