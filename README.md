@@ -125,6 +125,44 @@ cp profiles/_template/project.env.dist profiles/<project>/project.env   # зап
 
 Если рабочий профиль в `profiles/` **один**, `--project` можно не указывать — `./setup.sh` возьмёт его автоматически. Профилей 0 или 2+ — скрипт скажет, что делать.
 
+## Второй проект на той же машине (проектный слой)
+
+Ядро обслуживает сколько угодно проектов: проектные данные не обязаны лежать в ядре — их можно
+держать в **отдельном приватном репозитории слоя** (`<project>-agents`) и подключать ключом `--layer`.
+
+```bash
+# 1. Разложить клоны агентов (каталоги — из профиля слоя)
+cd /home/max/work/ibs/projects
+for d in med-drive-pm-jan med-drive-analyst-feb med-drive-lead-apr med-drive-dev-may \
+         med-drive-dev-jun med-drive-tester-mar med-drive-devops-jul; do
+  mkdir -p "$d" && git clone git@github.com:<org>/<project>.git "$d"
+  git clone git@github.com:<org>/<project>-docs.git "$d/docs"
+done
+
+# 2. Развернуть правила, скиллы и toolkit по слою проекта
+cd ai-agents-studio
+./setup.sh --layer /home/max/work/ibs/projects/med-drive-agents
+./setup.sh --layer /home/max/work/ibs/projects/med-drive-agents --check   # дрейф
+```
+
+Что делает `--layer`: берёт `project.env` (и переопределения `roles/`, `skills/`) из каталога слоя,
+раскладывает в каждый клон `.clinerules/`, `.cline/skills/`, конфиг `.agents` и toolkit-скрипты в
+`docs/09-Служебное/Скрипты/`. В `.agents` при работе со слоем пишется и путь к слою:
+
+```
+CORE=/home/max/work/ibs/projects/ai-agents-studio
+PROJECT=med-drive
+LAYER=/home/max/work/ibs/projects/med-drive-agents
+```
+
+Готовый пример: проект **MedDrive** — слой `med-drive-agents`, доки `med-drive-docs`
+(структура хранилища, регламенты и витрины — те же, что у любого проекта на ядре).
+
+Порядок для нового проекта: сначала профиль и клоны, потом `setup.sh --layer` (правила появятся
+сразу), затем первый коммит доков — после него `setup.sh --layer` ещё раз, чтобы toolkit лёг в
+клоны, где `docs/` пустой. Стек проекта описывается в слое: `skills/run-tests.md`,
+`skills/find-dead-code.md` — ядро при этом не меняется.
+
 ## Команда «синхронизируйся» (скилл sync-env)
 
 После сжатия памяти (компрессии) агенты «забывают» контекст. Скилл `sync-env` по команде **«синхронизируйся»** восстанавливает его:

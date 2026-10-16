@@ -296,7 +296,8 @@ for pair in $AGENTS; do
     ensure_file "$(cat "$f")" "$scripts_dir/$(basename "$f")"
   done
   ensure_file "CORE=$ROOT
-PROJECT=$PROJECT" "$scripts_dir/.agents"
+PROJECT=$PROJECT${LAYER:+
+LAYER=$PROFILE_DIR}" "$scripts_dir/.agents"
   ensure_lines "$d/docs/.gitignore" ".agents" "__pycache__/"
   echo "  OK $dir (toolkit: $(ls "$ROOT"/toolkit/scripts/*.py | wc -l) скриптов + project.py)"
 done
