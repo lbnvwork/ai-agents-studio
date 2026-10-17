@@ -131,18 +131,18 @@ cp profiles/_template/project.env.dist profiles/<project>/project.env   # зап
 держать в **отдельном приватном репозитории слоя** (`<project>-agents`) и подключать ключом `--layer`.
 
 ```bash
-# 1. Разложить клоны агентов (каталоги — из профиля слоя)
-cd /home/max/work/ibs/projects
-for d in med-drive-pm-jan med-drive-analyst-feb med-drive-lead-apr med-drive-dev-may \
-         med-drive-dev-jun med-drive-tester-mar med-drive-devops-jul; do
+# 1. Разложить клоны агентов (имена каталогов и корень — из профиля слоя)
+cd /home/max/work/lazurit/projects/meddrive
+for d in pm-jan analyst-feb lead-apr dev-may dev-jun tester-mar devops-jul; do
   mkdir -p "$d" && git clone git@github.com:<org>/<project>.git "$d"
   git clone git@github.com:<org>/<project>-docs.git "$d/docs"
 done
+git clone git@github.com:<org>/<project>-agents.git agents        # проектный слой — рядом с клонами
 
 # 2. Развернуть правила, скиллы и toolkit по слою проекта
-cd ai-agents-studio
-./setup.sh --layer /home/max/work/ibs/projects/med-drive-agents
-./setup.sh --layer /home/max/work/ibs/projects/med-drive-agents --check   # дрейф
+cd /home/max/work/ibs/projects/ibs-agents
+./setup.sh --layer /home/max/work/lazurit/projects/meddrive/agents
+./setup.sh --layer /home/max/work/lazurit/projects/meddrive/agents --check   # дрейф
 ```
 
 Что делает `--layer`: берёт `project.env` (и переопределения `roles/`, `skills/`) из каталога слоя,
@@ -150,13 +150,13 @@ cd ai-agents-studio
 `docs/09-Служебное/Скрипты/`. В `.agents` при работе со слоем пишется и путь к слою:
 
 ```
-CORE=/home/max/work/ibs/projects/ai-agents-studio
+CORE=/home/max/work/ibs/projects/ibs-agents
 PROJECT=med-drive
-LAYER=/home/max/work/ibs/projects/med-drive-agents
+LAYER=/home/max/work/lazurit/projects/meddrive/agents
 ```
 
-Готовый пример: проект **MedDrive** — слой `med-drive-agents`, доки `med-drive-docs`
-(структура хранилища, регламенты и витрины — те же, что у любого проекта на ядре).
+Готовый пример: проект **MedDrive** — клоны в `~/work/lazurit/projects/meddrive/` (слой — `agents/`),
+доки `med-drive-docs` (структура хранилища, регламенты и витрины — те же, что у любого проекта на ядре).
 
 Порядок для нового проекта: сначала профиль и клоны, потом `setup.sh --layer` (правила появятся
 сразу), затем первый коммит доков — после него `setup.sh --layer` ещё раз, чтобы toolkit лёг в
