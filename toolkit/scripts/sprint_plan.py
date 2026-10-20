@@ -213,7 +213,8 @@ def dash_func(rows):
         if cov.get(key):
             out.append('| %s | %d | %s |' % (key, cov[key], COVERAGE_RU.get(key, '')))
     out += ['', '> Значки: ' + legend, '',
-            '> Показаны задачи **от спринта 4** (архив 1–3 — в «Пройденных спринтах»).', '',
+            '> Показаны задачи **от спринта %d** (архив 1–%d — в «Пройденных спринтах»)'
+            % (P.sprint_from, max(P.sprint_from - 1, 0)),
             '| FUNC | Функция | Модуль | Покрытие | Спринты плана | Задачи плана | Пункты ТЗ |',
             '|---|---|---|---|---|---|---|']
     for line in func_lines():
@@ -494,7 +495,7 @@ def summary_table(rows, heads, numbers):
         r = tasks_of(rows, n)
         head = heads.get(n, {})
         s = stat(r)
-        if n <= 3:
+        if n < P.sprint_from:
             out.append('| %d | архив | — | %d | — | — | — | %s |' % (n, s['n'], prog(r)))
             continue
         term = head.get('capacity_note') or g(head.get('capacity'))
@@ -549,8 +550,9 @@ def load_legend():
 
 def plan_doc(rows, heads):
     # Спринты: архив + всё, что есть в шапках или в статьях (до SPRINT_TO)
-    numbers = [n for n in range(1, P.sprint_to + 1)
-               if n < P.sprint_from or heads.get(n) or tasks_of(rows, n)]
+    low = 0 if P.sprint_from == 0 else 1
+    numbers = [n for n in range(low, P.sprint_to + 1)
+               if heads.get(n) or tasks_of(rows, n) or low <= n < P.sprint_from]
     out = [
         '# Детальный план спринтов',
         '',

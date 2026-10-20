@@ -167,14 +167,14 @@ class Project(object):
             if ':' in item:
                 k, v = item.split(':', 1)
                 self.task_lane[k.strip()] = v.strip()
-        self.cur_sprint = _int(data.get('CUR_SPRINT')) or 0
-        self.sprint_from = _int(data.get('SPRINT_FROM')) or 1
-        self.sprint_to = _int(data.get('SPRINT_TO')) or self.cur_sprint
+        self.cur_sprint = _first_int(data.get('CUR_SPRINT'), 0)
+        self.sprint_from = _first_int(data.get('SPRINT_FROM'), 1)
+        self.sprint_to = _first_int(data.get('SPRINT_TO'), self.cur_sprint)
         self.stages = [s.strip() for s in data.get('STAGES', '').split(',') if s.strip()]
         self.deadline_d1 = data.get('DEADLINE_D1', '')
         self.deadline_d2 = data.get('DEADLINE_D2', '')
-        self.sprint_days = _int(data.get('SPRINT_DAYS')) or 0
-        self.hours_per_day = _int(data.get('HOURS_PER_DAY')) or 8
+        self.sprint_days = _first_int(data.get('SPRINT_DAYS'), 0)
+        self.hours_per_day = _first_int(data.get('HOURS_PER_DAY'), 8)
         self.archive_periods = {}
         for item in _split_items(data.get('ARCH_PERIOD', '')):
             if ':' in item:
@@ -185,8 +185,8 @@ class Project(object):
         self.repos = {k: data.get(k, '') for k in ('CODE_REPO', 'DOCS_REPO', 'PM_DIR')}
         self.owner_code = data.get('OWNER_CODE', '') or 'owner'
         self.owner_title = data.get('OWNER_TITLE', '') or 'Руководитель'
-        self.min_plan_sprint = _int(data.get('MIN_PLAN_SPRINT')) or 5
-        self.archive_to = _int(data.get('ARCHIVE_TO')) or self.sprint_from
+        self.min_plan_sprint = _first_int(data.get('MIN_PLAN_SPRINT'), 5)
+        self.archive_to = _first_int(data.get('ARCHIVE_TO'), self.sprint_from)
         self.deadline_d1_note = data.get('DEADLINE_D1_NOTE', '')
         self.deadline_d2_note = data.get('DEADLINE_D2_NOTE', '')
         self._by_dir = {a['dir']: a for a in self.agents}
@@ -342,6 +342,12 @@ class Project(object):
 
 def _split_items(value):
     return [x for x in (value or '').split() if x]
+
+
+def _first_int(value, default):
+    """int или default; 0 — валидное значение (спринт 0)."""
+    parsed = _int(value)
+    return default if parsed is None else parsed
 
 
 def _int(v):
