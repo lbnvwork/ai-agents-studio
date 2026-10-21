@@ -53,7 +53,7 @@ def frontmatter(path):
 def parse_registry():
     """Таблица реестра → список проектов."""
     if not os.path.isfile(REGISTRY):
-        raise SystemExit('нет реестра: %s' % REGISTRY)
+        return None  # это скрипт студийного уровня: реестра проектов в проекте нет
     rows, head = [], None
     for line in io.open(REGISTRY, encoding='utf-8'):
         line = line.rstrip('\n')
@@ -284,6 +284,10 @@ def check(rows):
 
 
 def main():
+    if not os.path.isfile(REGISTRY):
+        print('portfolio_sync: скрипт студийного уровня — нужен «01-Портфель/Реестр проектов.md».')
+        print('Запускается в доках студии (lazurit-docs), не в проекте. Пропуск.')
+        return 0
     rows = parse_registry()
     if '--check' in ARGV:
         return check(rows)
