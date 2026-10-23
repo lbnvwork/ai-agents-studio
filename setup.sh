@@ -105,6 +105,9 @@ AGENTS_DIR="$AGENTS_ROOT"
 if [ -z "${AGENTS_ROOT:-}" ]; then
   echo "в профиле не задан AGENTS_ROOT или AGENTS_SUBDIR: $PROFILE"; exit 2
 fi
+# нормализуем путь (AGENTS_SUBDIR=. даёт «/path/./dir» в карточках агентов)
+if [ -d "$AGENTS_DIR" ]; then AGENTS_DIR="$(cd "$AGENTS_DIR" && pwd)"; fi
+AGENTS_ROOT="$AGENTS_DIR"
 
 # --- методология (живёт в ядре) ---------------------------------------------
 # Какие скиллы получает дорожка по умолчанию. Профиль может перекрыть
@@ -116,6 +119,7 @@ declare -A CORE_LANE_SKILLS=(
   [dev]="run-tests explain-db write-aquarium find-dead-code"
   [test]="run-tests make-postman write-e2e-scenario"
   [devops]="run-tests release find-dead-code"
+  [legal]="legal-review legal-draft pd-compliance oss-license-check legal-radar"
 )
 GLOBAL_SKILLS=(git-workflow sync-env write-instruction)
 STALE_GLOBAL=(explain-db make-postman run-tests write-adr write-e2e-scenario)
