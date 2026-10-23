@@ -40,7 +40,7 @@ JSON
 Копируй `profiles/_template/project.env.dist` и заполни обязательное:
 
 - **Идентификация:** `PROJECT`, `PROJECT_TITLE`, `PROJECT_KIND` (`web` / `mobile` / `api+mobile`).
-- **Клоны:** `AGENTS_ROOT`, `AGENT_PREFIX` (если каталоги вида `<дорожка>-<код>`, ставь `*-` — тогда слой `agents/` не попадёт в glob'ы скиллов), `AGENTS="dir:код:дорожка …"`.
+- **Клоны:** `AGENTS_ROOT` (абсолютный путь к корню клонов) **или** `AGENTS_SUBDIR` (путь от каталога ядра, напр. `projects/<проект>` — тогда переезд папки не требует правок), `AGENT_PREFIX` (если каталоги вида `<дорожка>-<код>`, ставь `*-` — тогда слой `agents/` не попадёт в glob'ы скиллов), `AGENTS="dir:код:дорожка …"`.
 - **Дорожки:** `LANES="дорожка:ёмкость:название …"` (порядок = порядок в витринах).
 - **Агенты:** `AGENT_TITLE_<КОД>`, `AGENT_SHORT_<КОД>`, `AGENT_DOES_<КОД>`, `AGENT_STEM_<КОД>`, `PORT_<СТЕМ>_{APP,DB,WEB}`.
 - **Репозитории:** `CODE_REPO` / `CODE_REPO_URL` (основной), `APP_REPO` / `APP_REPO_URL` (если треков два), `DOCS_REPO*`, `PM_DIR`.

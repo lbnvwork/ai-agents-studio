@@ -96,8 +96,15 @@ load_profile() {
 load_profile
 if [ -z "${PROJECT:-}" ]; then echo "в профиле не задан PROJECT: $PROFILE"; exit 2; fi
 if [ -n "$ROOT_OVERRIDE" ]; then AGENTS_ROOT="$ROOT_OVERRIDE"; fi
+# AGENTS_SUBDIR — переносимый вариант: путь считается от каталога, где лежит ядро
+# (ядро и клоны агентов переезжают вместе — правки в профиле при переезде не нужны).
+if [ -z "${AGENTS_ROOT:-}" ] && [ -n "${AGENTS_SUBDIR:-}" ]; then
+  AGENTS_ROOT="$(cd "$ROOT/.." && pwd)/$AGENTS_SUBDIR"
+fi
 AGENTS_DIR="$AGENTS_ROOT"
-if [ -z "${AGENTS_ROOT:-}" ]; then echo "в профиле не задан AGENTS_ROOT: $PROFILE"; exit 2; fi
+if [ -z "${AGENTS_ROOT:-}" ]; then
+  echo "в профиле не задан AGENTS_ROOT или AGENTS_SUBDIR: $PROFILE"; exit 2
+fi
 
 # --- методология (живёт в ядре) ---------------------------------------------
 # Какие скиллы получает дорожка по умолчанию. Профиль может перекрыть

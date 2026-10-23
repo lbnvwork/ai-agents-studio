@@ -136,6 +136,22 @@ def load(project=None, layer=None, core=None, start_dir=None):
                      ', '.join(os.path.basename(os.path.dirname(p)) for p in profiles))
 
 
+def _agents_root(data, core):
+    """Корень агентских каталогов.
+
+    AGENTS_ROOT — путь явно (приоритет, обратная совместимость);
+    AGENTS_SUBDIR — путь относительно каталога, где лежит ядро (переносимый вариант:
+    ядро и клоны переезжают вместе, профиль править не нужно).
+    """
+    root = (data.get('AGENTS_ROOT') or '').strip()
+    if root:
+        return os.path.expanduser(root)
+    sub = (data.get('AGENTS_SUBDIR') or '').strip()
+    if sub:
+        return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(core)), sub))
+    return ''
+
+
 class Project(object):
     """Данные проекта из профиля + производные удобства.
 
@@ -156,7 +172,7 @@ class Project(object):
         self.name = data.get('PROJECT', '')
         self.title = data.get('PROJECT_TITLE') or self.name
         self.kind = data.get('PROJECT_KIND') or 'web'
-        self.root = data.get('AGENTS_ROOT', '')
+        self.root = _agents_root(data, core)
         self.prefix = data.get('AGENT_PREFIX', '')
         self.agents = self._agents()
         self.lanes = self._lanes()
@@ -210,7 +226,7 @@ class Project(object):
                 'stem': stem, 'role': m,
                 'ports': {k: self.data.get('PORT_%s_%s' % (stem.upper(), k), '')
                           for k in ('APP', 'DB', 'WEB')},
-                'path': os.path.join(self.data.get('AGENTS_ROOT', ''), d),
+                'path': os.path.join(self.root, d),
             })
         return out
 

@@ -145,7 +145,7 @@ done
 git clone git@github.com:<org>/<project>-agents.git agents        # проектный слой — рядом с клонами
 
 # 2. Развернуть правила, скиллы и toolkit по слою проекта
-cd /home/max/work/ibs/projects/ibs-agents
+cd /home/max/work/lazurit/agents
 ./setup.sh --layer /home/max/work/lazurit/projects/meddrive/agents
 ./setup.sh --layer /home/max/work/lazurit/projects/meddrive/agents --check   # дрейф
 ```
@@ -155,7 +155,7 @@ cd /home/max/work/ibs/projects/ibs-agents
 `docs/09-Служебное/Скрипты/`. В `.agents` при работе со слоем пишется и путь к слою:
 
 ```
-CORE=/home/max/work/ibs/projects/ibs-agents
+CORE=/home/max/work/lazurit/agents
 PROJECT=med-drive
 LAYER=/home/max/work/lazurit/projects/meddrive/agents
 ```
