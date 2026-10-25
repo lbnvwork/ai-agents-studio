@@ -120,6 +120,7 @@ declare -A CORE_LANE_SKILLS=(
   [test]="run-tests make-postman write-e2e-scenario"
   [devops]="run-tests release find-dead-code"
   [legal]="legal-review legal-draft pd-compliance oss-license-check legal-radar"
+  [medical]="medical-consult clinical-review drug-safety medical-data clinical-spec medical-content"
 )
 GLOBAL_SKILLS=(git-workflow sync-env write-instruction)
 STALE_GLOBAL=(explain-db make-postman run-tests write-adr write-e2e-scenario)
