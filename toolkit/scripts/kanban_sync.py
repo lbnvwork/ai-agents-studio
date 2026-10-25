@@ -35,6 +35,11 @@ STEP = {'spec': 'в очереди', 'planned': 'в анализе', 'in_progres
 STATUS_TAIL = re.compile(
     r'^·\s*[^—·]+—\s*(в очереди|к запуску|в анализе|в работе|на ревью|на тестах|выкатка|готово|'
     r'ждёт решения|отменена)\s*$')
+# Кто держит мяч: имена агентов и руководитель (тип owner). Дорожки (РП/Лид/Дев/Тест/DevOps/
+# Аналитик) разрешаются в имя, только если в дорожке ровно один человек (иначе — исполнитель).
+PERSONS = {a['short'] for a in P.agents} | {
+    v for v, meta in P.awaiting.items() if meta.get('type') == 'owner'}
+
 # Короткие имена агентов — из профиля (AGENT_SHORT_<КОД>)
 ORDER = ['Надо делать', 'Анализ', 'Делаю', 'Ревью', 'Тестирую', 'Деплой', 'Готово',
          'Отложено', 'Отменено']
@@ -89,8 +94,25 @@ def existing_tails():
     return tails
 
 
+def holder(r):
+    """Кто держит мяч — для хвоста карточки. Берём `awaiting` (это источник истины о том,
+    кто делает следующий шаг), а не `assignee`: 5.44 ждёт мёржа у Макса, хотя исполнитель — Эйп.
+    Дорожки разрешаем в имя только при одном человеке в дорожке; иначе — исполнитель."""
+    assignee = P.short(r.get('assignee', '')) if r.get('assignee') else '—'
+    awaiting = (r.get('awaiting') or '').strip()
+    if not awaiting:
+        return assignee
+    if awaiting in PERSONS:
+        return awaiting
+    if P.awaiting_type(awaiting) == 'lane':
+        dirs = P.agents_in_lane(P.awaiting.get(awaiting, {}).get('ref', ''))
+        if len(dirs) == 1:
+            return P.short(dirs[0])
+    return assignee
+
+
 def card(r, tail):
-    who = P.short(r.get('assignee', '')) if r.get('assignee') else '—'
+    who = holder(r)
     short = short_title(' '.join(r.get('title', '').split()))
     generated = '· %s — %s' % (who, STEP.get(r.get('status'), ''))
     if tail and not STATUS_TAIL.match(tail.strip()):
