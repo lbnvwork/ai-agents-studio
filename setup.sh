@@ -122,6 +122,7 @@ declare -A CORE_LANE_SKILLS=(
   [legal]="legal-review legal-draft pd-compliance oss-license-check legal-radar"
   [medical]="medical-consult clinical-review drug-safety medical-data clinical-spec medical-content"
   [sys]="sys-diagnose sys-fix sys-change-log sys-note sys-audit"
+  [sec]="rbpo-parse sec-process sec-training sec-threat-model sec-tooling sec-audit"
 )
 GLOBAL_SKILLS=(git-workflow sync-env write-instruction)
 STALE_GLOBAL=(explain-db make-postman run-tests write-adr write-e2e-scenario)
