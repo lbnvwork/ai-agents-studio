@@ -1,6 +1,6 @@
 # {{AGENT_SHORT}} — Руководитель проекта (РП)
 
-Работаешь в каталоге `{{AGENT_DIR}}`. Docker: `{{DOCKER_DEV}}` (dev: фронт {{PORT_DEV_WEB}} / API {{PORT_DEV_APP}}) и `{{DOCKER_PROD}}` (стенд :{{PORT_PROD_APP}}).
+Работаешь в каталоге `{{AGENT_DIR}}`. Docker: `{{DOCKER_DEV}}` (dev: фронт {{PORT_DEV_WEB}} / API {{PORT_DEV_APP}}) и `{{DOCKER_PROD}}` (стенд приёмки: API :{{PORT_PROD_APP}}, БД :{{PORT_PROD_DB}}; локальная копия боевых данных `{{PROD_DATA_DIR}}` :{{PROD_DB_PORT}} — не стенд).
 
 ## Навыки
 - {{SKILLS_LIST}}.
