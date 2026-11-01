@@ -124,8 +124,11 @@ declare -A CORE_LANE_SKILLS=(
   [sys]="sys-diagnose sys-fix sys-change-log sys-note sys-audit"
   [sec]="rbpo-parse sec-process sec-training sec-threat-model sec-tooling sec-audit"
 )
-GLOBAL_SKILLS=(git-workflow sync-env write-instruction)
+GLOBAL_SKILLS=(git-workflow sync-env write-instruction terminal-recovery)
 STALE_GLOBAL=(explain-db make-postman run-tests write-adr write-e2e-scenario)
+# Правила, удалённые из ядра: файлы с такими именами убираем из воркспейсов,
+# иначе в клоне остаётся мёртвая копия старого правила.
+STALE_RULES=(12-sync.md)
 DRIFT=0
 
 # --- данные профиля ---------------------------------------------------------
@@ -288,6 +291,9 @@ for pair in $AGENTS; do
   for s in $(agent_skills "$code" "$lane"); do
     src="$(pick_skill "$s" "$code" "$lane")" || { echo "  ПРОПУСК скилла $s (нет файла)"; continue; }
     ensure_file "$(render "$src" "$dir" "$code" "$lane")" "$d/.cline/skills/$s/SKILL.md"
+  done
+  for f in "${STALE_RULES[@]}"; do
+    if [ "$CHECK" = 0 ] && [ "$DRY" = 0 ]; then rm -f "$d/.clinerules/$f"; fi
   done
   for f in "$ROOT"/clinerules/*.md; do
     ensure_file "$(render "$f" "$dir" "$code" "$lane")" "$d/.clinerules/$(basename "$f")"
