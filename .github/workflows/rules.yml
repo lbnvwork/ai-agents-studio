@@ -1,0 +1,31 @@
+name: rules
+
+# Защитная сетка при сжатии правил: инварианты (запреты, гейты, обязательства)
+# не должны исчезать из clinerules/*.md. Список — toolkit/scripts/check_rules.py.
+on:
+  push:
+    paths:
+      - 'clinerules/**'
+      - 'toolkit/scripts/check_rules.py'
+      - '.github/workflows/rules.yml'
+  pull_request:
+    paths:
+      - 'clinerules/**'
+      - 'toolkit/scripts/check_rules.py'
+      - '.github/workflows/rules.yml'
+  workflow_dispatch:
+
+jobs:
+  invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Инварианты правил на месте
+        run: python3 toolkit/scripts/check_rules.py
+      - name: Размер правил (контекст на сессию)
+        run: |
+          wc -c clinerules/*.md
+          python3 toolkit/scripts/check_rules.py --budget 32000
