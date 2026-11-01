@@ -51,7 +51,7 @@ RULES = sorted(glob.glob(os.path.join(RULES_DIR, '*.md'))) if RULES_DIR else []
 
 # (id, описание, regex) — каждый инвариант обязан найтись хотя бы в одном файле
 INVARIANTS = [
-    ('commit-ban', 'запрет коммитов агентам', r'git commit'),
+    ('commit-ban', 'запрет коммитов агентам', r'не выполняет[^\n]*git commit'),
     ('commit-owner', 'коммит делает руководитель', r'руководител'),
     ('force-push', 'запрет force-push', r'--force'),
     ('wip', 'WIP 1–2 задачи на агента', r'WIP'),
@@ -66,6 +66,7 @@ INVARIANTS = [
     ('make-ci', 'единая команда make ci', r'make ci'),
     ('report-block', 'блок КОММИТЫ в отчёте', r'КОММИТЫ'),
     ('report-names', 'в блоке только названия', r'только названия'),
+    ('commit-commands', 'названия коммитов — готовыми git-командами', r'git add[^\n]*&&[^\n]*git commit'),
     ('actual-date', 'фактическая дата записи', r'фактическ'),
     ('docker-down', 'остановка стека после задачи', r'docker compose down|down`'),
     ('transfer-new-code', 'перенос = новый код', r'новый код'),
