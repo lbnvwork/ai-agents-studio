@@ -129,6 +129,9 @@ STALE_GLOBAL=(explain-db make-postman run-tests write-adr write-e2e-scenario)
 # Правила, удалённые из ядра: файлы с такими именами убираем из воркспейсов,
 # иначе в клоне остаётся мёртвая копия старого правила.
 STALE_RULES=(12-sync.md)
+# Скрипты ядра, которые в доки проекта НЕ уезжают: проверяют само ядро, в клоне бесполезны
+# (и пачкали бы git-статус каждому агенту). Случайно оставшиеся копии setup.sh удаляет.
+CORE_ONLY_SCRIPTS=(check_rules.py)
 DRIFT=0
 
 # --- данные профиля ---------------------------------------------------------
@@ -314,13 +317,23 @@ for pair in $AGENTS; do
   scripts_dir="$d/docs/09-Служебное/Скрипты"
   if [ "$CHECK" = 0 ]; then mkdir -p "$scripts_dir"; fi
   for f in "$ROOT/toolkit/project.py" "$ROOT"/toolkit/scripts/*.py; do
-    ensure_file "$(cat "$f")" "$scripts_dir/$(basename "$f")"
+    base="$(basename "$f")"; skip=0
+    for c in "${CORE_ONLY_SCRIPTS[@]}"; do [ "$base" = "$c" ] && skip=1; done
+    [ "$skip" = 1 ] && continue
+    ensure_file "$(cat "$f")" "$scripts_dir/$base"
+  done
+  # core-only скрипты не ставим, а случайно оставшиеся копии убираем (иначе — дрейф)
+  for c in "${CORE_ONLY_SCRIPTS[@]}"; do
+    p="$scripts_dir/$c"
+    [ -f "$p" ] || continue
+    if [ "$CHECK" = 1 ]; then echo "  ДРЕЙФ (лишний core-only скрипт): $p"; DRIFT=$((DRIFT+1)); fi
+    if [ "$CHECK" = 0 ] && [ "$DRY" = 0 ]; then rm -f "$p"; fi
   done
   ensure_file "CORE=$ROOT
 PROJECT=$PROJECT${LAYER:+
 LAYER=$PROFILE_DIR}" "$scripts_dir/.agents"
   ensure_lines "$d/docs/.gitignore" ".agents" "__pycache__/"
-  echo "  OK $dir (toolkit: $(ls "$ROOT"/toolkit/scripts/*.py | wc -l) скриптов + project.py)"
+  echo "  OK $dir (toolkit: $(( $(ls "$ROOT"/toolkit/scripts/*.py | wc -l) - ${#CORE_ONLY_SCRIPTS[@]} )) скриптов + project.py; core-only: ${CORE_ONLY_SCRIPTS[*]})"
 done
 
 if [ "$CHECK" = 1 ]; then
