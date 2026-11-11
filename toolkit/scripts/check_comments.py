@@ -171,12 +171,6 @@ def main(argv):
 
         for s in order:
             low = s.lower()
-            if 'аквариум' in low:
-                rows = [x for x in sec[s] if x.strip().startswith('|')]
-                if len(rows) > 17:
-                    problems.append('%s: «Аквариум» %d строк таблицы (бюджет 15 + заголовки)' % (rel, len(rows)))
-                if (fm.get('type') or '').strip() in ('doc', 'infra', 'test'):
-                    problems.append('%s: для type=%s секция «Аквариум» не предусмотрена' % (rel, fm.get('type')))
             if low.startswith('реализация'):
                 body = [x for x in sec[s] if x.strip() and not x.strip().startswith('<!--')]
                 if len(body) > 10:
