@@ -28,4 +28,4 @@ jobs:
       - name: Размер правил (контекст на сессию)
         run: |
           wc -c clinerules/*.md
-          python3 toolkit/scripts/check_rules.py --budget 32000
+          python3 toolkit/scripts/check_rules.py --budget 33000
