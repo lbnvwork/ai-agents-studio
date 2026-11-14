@@ -6,11 +6,13 @@ on:
   push:
     paths:
       - 'clinerules/**'
+      - 'roles/*/00-role.md'
       - 'toolkit/scripts/check_rules.py'
       - '.github/workflows/rules.yml'
   pull_request:
     paths:
       - 'clinerules/**'
+      - 'roles/*/00-role.md'
       - 'toolkit/scripts/check_rules.py'
       - '.github/workflows/rules.yml'
   workflow_dispatch:

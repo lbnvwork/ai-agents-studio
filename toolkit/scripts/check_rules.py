@@ -48,6 +48,9 @@ def rules_dir():
 
 RULES_DIR = rules_dir()
 RULES = sorted(glob.glob(os.path.join(RULES_DIR, '*.md'))) if RULES_DIR else []
+CORE_DIR = os.path.dirname(RULES_DIR) if RULES_DIR else None
+# Карточки ролей проверяем только на инварианты (в бюджет не входят — они длинные)
+ROLES = sorted(glob.glob(os.path.join(CORE_DIR, 'roles', '*', '00-role.md'))) if CORE_DIR else []
 
 # (id, описание, regex) — каждый инвариант обязан найтись хотя бы в одном файле
 INVARIANTS = [
@@ -95,14 +98,17 @@ def main():
         body = open(path, encoding='utf-8').read()
         text[os.path.basename(path)] = body
         total += len(body.encode('utf-8'))
-    joined = '\n'.join(text.values())
+    extra = []
+    for path in ROLES:
+        extra.append(open(path, encoding='utf-8').read())
+    joined = '\n'.join(list(text.values()) + extra)
 
     missing = []
     for key, title, pattern in INVARIANTS:
         if not re.search(pattern, joined, re.IGNORECASE):
             missing.append((key, title))
 
-    print('правил: %d файлов, %d байт' % (len(RULES), total))
+    print('правил: %d файлов, %d байт; ролей проверено: %d' % (len(RULES), total, len(ROLES)))
     print('инвариантов проверено: %d' % len(INVARIANTS))
     if missing:
         print('ПОТЕРЯНЫ ИНВАРИАНТЫ (%d):' % len(missing))
