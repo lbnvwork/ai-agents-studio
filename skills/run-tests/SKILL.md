@@ -23,6 +23,44 @@ ESLint · Prettier · Stylelint · Knip · PHPUnit · Vitest · сборка ф�
 Жёсткий режим: **любое замечание = ненулевой код возврата**; шаги не прерываются, в конце — сводка
 «упало N из M» и перечень упавших. Имя compose-проекта берётся из `.env`, `-p` не нужен.
 
+## Xdebug: как пользоваться, не ломая чужие настройки
+
+`docker/php/xdebug.ini`, `docker-compose.override.yml` и `.vscode/launch.json` — общие и личные
+настройки, **их не правишь**. Режим задаётся переменной окружения на одну команду: `XDEBUG_MODE`
+перекрывает `xdebug.mode` из ini и на другие прогоны не влияет.
+
+```bash
+# покрытие (медленнее в 2–5 раз — только когда покрытие действительно нужно)
+docker compose exec -T -e XDEBUG_MODE=coverage php sh -lc 'vendor/bin/phpunit --coverage-text'
+
+# читаемые ошибки и stack trace в логах
+docker compose exec -T -e XDEBUG_MODE=develop php sh -lc 'vendor/bin/phpunit --filter SomeTest'
+
+# массовый прогон — выключить, чтобы не терять скорость
+docker compose exec -T -e XDEBUG_MODE=off php sh -lc 'vendor/bin/phpunit'
+```
+
+**`XDEBUG_SESSION` не выставляешь никогда:** это триггер ожидания слушателя на порту 9003, команда
+повиснет до таймаута. Триггер — только человек в VS Code (Run and Debug → «Listen for Xdebug (docker)»).
+
+## Если тесты падают на «undefined column/table»
+
+Это не код, а **устаревшая тестовая БД**: `symfony_test` не мигрируется сама. Лечится так:
+
+```bash
+docker compose exec -T php sh -lc 'php bin/console doctrine:migrations:migrate --env=test --no-interaction --allow-no-migration'
+```
+
+Если схема совсем старая (нет таблиц `regions`, `federal_districts`), пересоздать:
+
+```bash
+docker compose exec -T php sh -lc 'php bin/console doctrine:database:drop --env=test --force --if-exists \
+  && php bin/console doctrine:database:create --env=test \
+  && php bin/console doctrine:migrations:migrate --env=test --no-interaction'
+```
+
+`make ci`/`make test` теперь догоняют миграции тестовой БД сами (`backend_test_db` в `scripts/ci.sh`).
+
 ## Fallback: если `make ci` в проекте нет
 
 | Стек | Команды (в контейнере проекта, `-T` обязателен) |
