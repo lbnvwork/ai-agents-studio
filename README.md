@@ -104,8 +104,8 @@ git clone git@github.com:<org>/<project>-agents.git
 |---|---|
 | `pm` (РП) | review-code, status-briefing, find-dead-code |
 | `analytics` | — |
-| `lead` | run-tests, explain-db, write-aquarium, write-adr, review-code, find-dead-code |
-| `dev` | run-tests, explain-db, write-aquarium, find-dead-code |
+| `lead` | run-tests, explain-db, write-aquarium, write-adr, review-code, find-dead-code, check-coverage |
+| `dev` | run-tests, explain-db, write-aquarium, find-dead-code, check-coverage |
 | `test` | run-tests, make-postman, write-e2e-scenario |
 | `devops` | run-tests, release, find-dead-code |
 
