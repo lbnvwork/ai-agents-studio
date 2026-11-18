@@ -53,6 +53,29 @@ grep -B2 'count="0"' api/var/coverage/clover.xml
   блокер или долг.
 - Красный гейт (`fe-coverage` / `fe-coverage-report`) — блокер, не долг.
 
+## Покрытие по файлам PR (глазами)
+
+`scripts/coverage-pr.sh <PR>` из корня клона печатает по каждому изменённому в PR файлу:
+процент строк, непокрытые строки и методы, итог; код возврата 1 — если что-то не покрыто.
+
+- `--files "api/src/A.php api/src/B.php"` — свой список вместо номера PR;
+- `--no-run` — взять готовый отчёт (phpunit с покрытием 2–4 мин, vitest ~1 мин);
+- `--backend-only` / `--frontend-only`;
+- `--ignore-entities` — `Entity/` выносит в «справочно»: геттеры/сеттеры блокером не считаем.
+
+## Подсветка в VS Code (Coverage Gutters)
+
+Скрипт пишет локальные копии отчётов с абсолютными путями: `api/var/coverage/clover-local.xml`
+(`/var/www/html` → `<клон>/api`) и `frontend/coverage/lcov-local.info` (lcov отдаёт `SF:src/...` —
+дописываем `<клон>/frontend/src/`). Без этого расширение файлы не находит.
+
+Настройки воркспейса: `coverageFileNames: ["clover-local.xml", "lcov-local.info"]`, `coverageBaseDir: "**"`,
+`coverageReportFileName: "**/api/var/coverage/html/index.html"`, `showLineCoverage: true`,
+`showGutterCoverage: false` (маркеры в жёлобе конфликтуют с точками останова).
+
+Дальше: команда **Coverage Gutters: Watch** → выбрать файл своего клона; **Preview Report** —
+HTML-отчёт прямо в редакторе.
+
 ## Чего не делаем
 
 - Не поднимаем процент тестами без ассертов и «вызовами ради строки».
