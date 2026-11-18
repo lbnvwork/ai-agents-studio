@@ -63,18 +63,11 @@ grep -B2 'count="0"' api/var/coverage/clover.xml
 - `--backend-only` / `--frontend-only`;
 - `--ignore-entities` — `Entity/` выносит в «справочно»: геттеры/сеттеры блокером не считаем.
 
-## Подсветка в VS Code (Coverage Gutters)
+## Локальные копии отчётов — не для агента
 
-Скрипт пишет локальные копии отчётов с абсолютными путями: `api/var/coverage/clover-local.xml`
-(`/var/www/html` → `<клон>/api`) и `frontend/coverage/lcov-local.info` (lcov отдаёт `SF:src/...` —
-дописываем `<клон>/frontend/src/`). Без этого расширение файлы не находит.
-
-Настройки воркспейса: `coverageFileNames: ["clover-local.xml", "lcov-local.info"]`, `coverageBaseDir: "**"`,
-`coverageReportFileName: "**/api/var/coverage/html/index.html"`, `showLineCoverage: true`,
-`showGutterCoverage: false` (маркеры в жёлобе конфликтуют с точками останова).
-
-Дальше: команда **Coverage Gutters: Watch** → выбрать файл своего клона; **Preview Report** —
-HTML-отчёт прямо в редакторе.
+Скрипт дополнительно пишет `api/var/coverage/clover-local.xml` и `frontend/coverage/lcov-local.info`
+(отчёты с абсолютными путями) — это для подсветки покрытия в редакторе **у руководителя**.
+Агенту они не нужны: в отчёт идут цифры из таблицы, которую печатает скрипт.
 
 ## Чего не делаем
 
