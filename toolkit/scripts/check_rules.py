@@ -80,6 +80,7 @@ INVARIANTS = [
     ('docs-separate', 'доки в отдельном репо', r'DOCS_REPO'),
     ('pull-first', 'pull перед правкой доков', r'git pull'),
     ('dead-code', 'мёртвый код не оправдан тестами', r'мёртв'),
+    ('aquarium-frame', 'Evaluate — только в текущем кадре', r'Evaluate[^\n]*текущем кадре'),
 ]
 
 
