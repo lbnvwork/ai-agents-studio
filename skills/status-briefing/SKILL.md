@@ -59,7 +59,8 @@ description: Оперативный обзор команды и актуали�
 4. Пересобери витрины (`sprint_plan.py --write`) и прогони `check_meta.py` + `sprint_plan.py --check`.
 
 ## Статусы
-- ⬜ todo · 🔄 in_progress · 👀 review · 🧪 testing · 🚀 deploy · ✅ done · ⛔ cancelled
+- ⬜ spec · 🔵 planned · 🟢 ready (к разработке) · 🔄 in_progress · 👀 review · 🧪 testing · 🚀 deploy · ✅ done · ⛔ blocked · ✖ cancelled
+- **WIP=1:** в `in_progress` — не больше одной задачи на исполнителя; очередь — `ready`, порядок — `order`.
 
 ## Регламенты
 - `docs/09-Служебное/Регламенты/Воркфлоу.md` · `Статусы.md` · `Комментарии задач.md` · `Эскалация.md`

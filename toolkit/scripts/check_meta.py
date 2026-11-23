@@ -23,14 +23,14 @@ SKIP_DIRS = ('_Шаблоны', 'Планы спринтов', 'Архив')
 
 VOCAB = {
     'type': {'feature', 'fix', 'refactor', 'doc', 'infra', 'test', 'planning', 'analysis'},
-    'status': {'spec', 'planned', 'in_progress', 'review', 'testing', 'deploy', 'done', 'blocked', 'cancelled'},
+    'status': {'spec', 'planned', 'ready', 'in_progress', 'review', 'testing', 'deploy', 'done', 'blocked', 'cancelled'},
     'priority': {'P0', 'P1', 'P2', 'P3'},
     'size': {'S', 'M', 'L'},
 }
 REQUIRED = ('code', 'title', 'type', 'status', 'sprint')
 # Для задач «в работе» обязательны ещё приоритет, размер и держатель мяча.
 REQUIRED_WHEN_WORKING = ('priority', 'size', 'awaiting')
-WORKING = {'planned', 'in_progress', 'review', 'testing', 'deploy', 'blocked'}
+WORKING = {'planned', 'ready', 'in_progress', 'review', 'testing', 'deploy', 'blocked'}
 # Для задач плана (спринт ≥ 5) обязательны поля планирования.
 REQUIRED_WHEN_PLANNED = ('est', 'order', 'goal')
 
@@ -53,6 +53,7 @@ def main(argv):
 
     problems = []
     checked = 0
+    wip = {}
     for base, dirs, files in os.walk(ROOT):
         if any(s in base for s in SKIP_DIRS):
             continue
@@ -78,7 +79,14 @@ def main(argv):
             awaiting = fm.get('awaiting', '').strip()
             if awaiting and P.awaiting and awaiting not in P.awaiting:
                 problems.append('%s: awaiting=%r — вне словаря профиля (ключ AWAITING)' % (rel, awaiting))
-            if fm.get('status', '').strip() in WORKING:
+            status = fm.get('status', '').strip()
+            if status == 'in_progress':
+                who = fm.get('assignee', '').strip()
+                if not who:
+                    problems.append('%s: in_progress без assignee — WIP не посчитать' % rel)
+                else:
+                    wip.setdefault(who, []).append(rel)
+            if status in WORKING:
                 for key in REQUIRED_WHEN_WORKING:
                     if not fm.get(key):
                         problems.append('%s: задача в работе без поля %s' % (rel, key))
@@ -91,6 +99,12 @@ def main(argv):
                     if not fm.get(key):
                         problems.append('%s: задача плана (спринт %d) без поля %s' % (
                             rel, sprint, key))
+    lane_of = {a['dir']: a['lane'] for a in P.agents}
+    for who, items in sorted(wip.items()):
+        if len(items) > 1 and lane_of.get(who) != 'pm':
+            problems.append('WIP: %s — %d задач в in_progress (лимит 1): %s' % (
+                who, len(items), ', '.join(items)))
+
     print('проверено статей: %d' % checked)
     if problems:
         print('нарушений: %d' % len(problems))

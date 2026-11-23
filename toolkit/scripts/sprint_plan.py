@@ -34,7 +34,7 @@ for _lane in list(LANE_ORDER) + [a['lane'] for a in P.agents]:
     for _a in P.agents:
         if _a['lane'] == _lane:
             LANE_OF.setdefault(_a['dir'], P.lane_of(_a['dir']))
-ST_EMOJI = {'spec': '⬜ spec', 'planned': '🔵 planned', 'in_progress': '🚧 in_progress',
+ST_EMOJI = {'spec': '⬜ spec', 'planned': '🔵 planned', 'ready': '🟢 ready', 'in_progress': '🚧 in_progress',
             'review': '👀 review', 'testing': '🧪 testing', 'deploy': '🚀 deploy',
             'done': '✅ done', 'blocked': '⛔ blocked', 'cancelled': '✖ cancelled'}
 FIELDS = ('code', 'title', 'type', 'status', 'sprint', 'priority', 'size', 'est',
@@ -182,7 +182,7 @@ def dash_archive(rows, heads):
         period = head.get('period') or head.get('start', '') or ARCH_PERIOD.get(str(n), '—')
         out.append('| Спринт %d | %s | %d | **%d** | %d | [[Спринт %d]] |' % (
             n, period, s['n'], s['status'].get('done', 0), s['status'].get('cancelled', 0), n))
-    out += ['', '> Спринт закрыт, когда в нём не осталось статусов `spec`, `planned`, `in_progress`, '
+    out += ['', '> Спринт закрыт, когда в нём не осталось статусов `spec`, `planned`, `ready`, `in_progress`, '
                 '`review`, `testing`, `deploy`: незакрытые уходят в следующий спринт новым кодом '
                 '(поле `carried_from`). Здесь — итоги: сколько задач закрыто и отменено.']
     return '\n'.join(out)
@@ -482,7 +482,7 @@ def main():
 
 def prog(rows):
     s = stat(rows)
-    order = ['in_progress', 'review', 'testing', 'deploy', 'blocked', 'planned', 'spec', 'done', 'cancelled']
+    order = ['in_progress', 'review', 'testing', 'deploy', 'blocked', 'ready', 'planned', 'spec', 'done', 'cancelled']
     items = ['%s %d' % (ST_EMOJI.get(k, k), s['status'][k])
              for k in order if s['status'].get(k)]
     return ' · '.join(items) or '—'
@@ -541,7 +541,7 @@ def load_legend():
         '- **Тип:** `feature` · `fix` · `refactor` · `doc` · `infra` · `test` · `planning` · `analysis`',
         '- **Приоритет:** P0 (дедлайн/блокер) · P1 · P2 · P3',
         '- **Оценка (est):** чел-дни разработки (1 дев); дорожки лида, теста, DevOps, аналитика — отдельно',
-        '- **Статус:** ⬜ spec (в очереди) · 🔵 planned · 🚧 in_progress · 👀 review · 🧪 testing · '
+        '- **Статус:** ⬜ spec (в очереди) · 🔵 planned · 🟢 ready (к разработке) · 🚧 in_progress · 👀 review · 🧪 testing · '
         '🚀 deploy · ✅ done · ⛔ blocked · ✖ cancelled',
         '- **Older/новые поля статей:** `est` (оценка), `order` (очередь запуска в спринте), '
         '`goal` (цель → KPI), `carried_from` (перенос «было → стало»)',
